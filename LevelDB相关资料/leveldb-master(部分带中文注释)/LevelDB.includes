@@ -1,8 +1,0 @@
-.
-db
-helpers/memenv
-include/leveldb
-port
-port/win
-table
-util

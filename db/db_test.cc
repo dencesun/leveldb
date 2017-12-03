@@ -17,7 +17,7 @@ int main() {
     Options op;
     op.create_if_missing = true;
     Status s = DB::Open(op,"/tmp/testdb",&db);
-
+    
     if(s.ok()){
         cout << "创建成功" << endl;
         s = db->Put(WriteOptions(),"abcd","1234");
