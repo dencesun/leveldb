@@ -19,25 +19,25 @@ int main() {
     Status s = DB::Open(op,"/tmp/testdb",&db);
     
     if(s.ok()){
-        cout << "创建成功" << endl;
+        cout << "create table success" << endl;
         s = db->Put(WriteOptions(),"abcd","1234");
         if(s.ok()){
-            cout << "插入数据成功" << endl;
+            cout << "insert data success" << endl;
             string value;
             s = db->Get(ReadOptions(),"abcd",&value);
             if(s.ok()){
-                cout << "获取数据成功,value:" << value << endl;
+                cout << "get data success,value:" << value << endl;
             }
             else{
-                cout << "获取数据失败" << endl;
+                cout << "get data failure" << endl;
             }
         }
         else{
-            cout << "插入数据失败" << endl;
+            cout << "insert data failure" << endl;
         }
     }
     else{
-        cout << "创建数据库失败" << endl;
+        cout << "create database failure" << endl;
     }
     delete db;
     return 0;

@@ -348,13 +348,16 @@ Status Version::Get(const ReadOptions& options,
   // in an smaller level, later levels are irrelevant.
   std::vector<FileMetaData*> tmp;
   FileMetaData* tmp2;
+  // sstable查找的核心， 从level0的文件中开始查找，直到最大的level，如果中间找到了就直接返回了
   for (int level = 0; level < config::kNumLevels; level++) {
+
+    /*----------------找打可能包含key的文件表begin------------------*/
     size_t num_files = files_[level].size();
     if (num_files == 0) continue;
 
     // Get the list of files to search in this level
     FileMetaData* const* files = &files_[level][0];
-    if (level == 0) {
+    if (level == 0) { // level0 特殊对待，key可能在任何一个level0的文件当中（level0的文件没有经过排序）
       // Level-0 files may overlap each other.  Find all files that
       // overlap user_key and process them in order from newest to oldest.
       tmp.reserve(num_files);
@@ -362,7 +365,7 @@ Status Version::Get(const ReadOptions& options,
         FileMetaData* f = files[i];
         if (ucmp->Compare(user_key, f->smallest.user_key()) >= 0 &&
             ucmp->Compare(user_key, f->largest.user_key()) <= 0) {
-          tmp.push_back(f);
+          tmp.push_back(f); //如果查找key落在该文件大小范围,则加到文件列表供下面进一步查询
         }
       }
       if (tmp.empty()) continue;
@@ -372,7 +375,7 @@ Status Version::Get(const ReadOptions& options,
       num_files = tmp.size();
     } else {
       // Binary search to find earliest index whose largest key >= ikey.
-      uint32_t index = FindFile(vset_->icmp_, files_[level], ikey);
+      uint32_t index = FindFile(vset_->icmp_, files_[level], ikey); // 查找到在哪一个文件中，或者不在这个level中
       if (index >= num_files) {
         files = NULL;
         num_files = 0;
@@ -388,8 +391,11 @@ Status Version::Get(const ReadOptions& options,
         }
       }
     }
+    /*----------------找到可能包含key的文件列表end----------------*/
 
-    for (uint32_t i = 0; i < num_files; ++i) {
+
+    /*----------------遍历文件查找key begin--------------------*/
+    for (uint32_t i = 0; i < num_files; ++i) { // 如果num_files不为0，说明key可能在这些文件当中
       if (last_file_read != NULL && stats->seek_file == NULL) {
         // We have had more than one seek for this read.  Charge the 1st file.
         stats->seek_file = last_file_read;
@@ -406,11 +412,11 @@ Status Version::Get(const ReadOptions& options,
       saver.user_key = user_key;
       saver.value = value;
       s = vset_->table_cache_->Get(options, f->number, f->file_size,
-                                   ikey, &saver, SaveValue);
+                                   ikey, &saver, SaveValue); // 在cache中读取文件的内容
       if (!s.ok()) {
         return s;
       }
-      switch (saver.state) {
+      switch (saver.state) { // 查找结果返回
         case kNotFound:
           break;      // Keep searching in other files
         case kFound:
@@ -423,6 +429,7 @@ Status Version::Get(const ReadOptions& options,
           return s;
       }
     }
+    /*-------------- 遍历文件查找key end-----------------*/
   }
 
   return Status::NotFound(Slice());  // Use an empty error message for speed
