@@ -20,6 +20,7 @@ class WriteBatchInternal {
   static int Count(const WriteBatch* batch);
 
   // Set the count for the number of entries in the batch.
+  // 为在batch中的记录个数设置一个统计量
   static void SetCount(WriteBatch* batch, int n);
 
   // Return the sequence number for the start of this batch.

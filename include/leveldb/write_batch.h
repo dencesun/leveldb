@@ -31,16 +31,21 @@ class Slice;
 
 class LEVELDB_EXPORT WriteBatch {
  public:
+  // 构造函数
   WriteBatch();
+  // 析构函数
   ~WriteBatch();
 
   // Store the mapping "key->value" in the database.
+  // 将‘key-value'映射存储到数据库中
   void Put(const Slice& key, const Slice& value);
 
   // If the database contains a mapping for "key", erase it.  Else do nothing.
+  // 如果数据库中包含映射 ‘key', 那么擦除它，否则什么都不做
   void Delete(const Slice& key);
 
   // Clear all updates buffered in this batch.
+  // 清除本次批处理当中的更新缓冲区
   void Clear();
 
   // The size of the database changes caused by this batch.
@@ -50,6 +55,7 @@ class LEVELDB_EXPORT WriteBatch {
   size_t ApproximateSize();
 
   // Support for iterating over the contents of a batch.
+  // 支持对batch内容的迭代（不是很懂）
   class Handler {
    public:
     virtual ~Handler();

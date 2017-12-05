@@ -22,17 +22,23 @@ namespace leveldb {
 class LEVELDB_EXPORT Status {
  public:
   // Create a success status.
+  // 创建一个成功状态（构造函数）
   Status() : state_(NULL) { }
+  // 析构函数
   ~Status() { delete[] state_; }
 
   // Copy the specified status.
+  // 拷贝一个指定状态（拷贝构造函数）
   Status(const Status& s);
+  // 运算符重载
   void operator=(const Status& s);
 
   // Return a success status.
+  // 返回一个成功状态
   static Status OK() { return Status(); }
 
   // Return error status of an appropriate type.
+  // 返回一个适当类型的错误状态
   static Status NotFound(const Slice& msg, const Slice& msg2 = Slice()) {
     return Status(kNotFound, msg, msg2);
   }

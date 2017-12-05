@@ -43,10 +43,12 @@ struct LEVELDB_EXPORT Options {
 
   // If true, the database will be created if it is missing.
   // Default: false
+  // 默认值是false，如果为true，则会创建数据库
   bool create_if_missing;
 
   // If true, an error is raised if the database already exists.
   // Default: false
+  // 默认为false，如果为true，则会抛出一个错误
   bool error_if_exists;
 
   // If true, the implementation will do aggressive checking of the
@@ -55,6 +57,8 @@ struct LEVELDB_EXPORT Options {
   // corruption of one DB entry may cause a large number of entries to
   // become unreadable or for the entire DB to become unopenable.
   // Default: false
+  // 如果为真，程序执行将会对正在执行的数据进行非常严格的检查，如果检查到任何的错误，将会及早的停止
+  // 这个将会有不可不可预见的分支：例如....(不太会翻译)
   bool paranoid_checks;
 
   // Use the specified object to interact with the environment,
@@ -66,19 +70,26 @@ struct LEVELDB_EXPORT Options {
   // be written to info_log if it is non-NULL, or to a file stored
   // in the same directory as the DB contents if info_log is NULL.
   // Default: NULL
+  // 任何内部产生的进度信息和错误信息将会被写入info_log（如果info_log是非Null的）
+  // 或者如果info_log是NULL，那么则把信息作为文件存储在相同的目录下，作为数据库的内容
   Logger* info_log;
 
   // -------------------
   // Parameters that affect performance
+  // 影响性能的参数
 
   // Amount of data to build up in memory (backed by an unsorted log
   // on disk) before converting to a sorted on-disk file.
-  //
   // Larger values increase performance, especially during bulk loads.
   // Up to two write buffers may be held in memory at the same time,
   // so you may wish to adjust this parameter to control memory usage.
   // Also, a larger write buffer will result in a longer recovery time
   // the next time the database is opened.
+  // 在转换为一个有序的磁盘文件之前，大量的数据建立在内存中（在磁盘中会有一个无序的log文件存储）
+  // 更大的值会增加性能，尤其是在大块的载入时
+  // 在同一个时间内，在内存中可以支持同时有两个写入缓冲区
+  // 所以你可能希望通过调整参数去控制内存的使用
+  // 当然，一个更大的写缓冲区将会导致一个更长的恢复时间在下一次将数据库打开时
   //
   // Default: 4MB
   size_t write_buffer_size;
@@ -86,15 +97,20 @@ struct LEVELDB_EXPORT Options {
   // Number of open files that can be used by the DB.  You may need to
   // increase this if your database has a large working set (budget
   // one open file per 2MB of working set).
+  // 在数据库可以被使用的最大的打开的文件数量。（每个打开的文件有2M的工作集？）
+  // 如果你的数据库有更大的工作集，需要去提高这个默认值
   //
   // Default: 1000
   int max_open_files;
 
   // Control over blocks (user data is stored in a set of blocks, and
   // a block is the unit of reading from disk).
+  // 通过块控制（使用者数据存储在一些列的块当中，并且块是从磁盘读取的单元）
 
   // If non-NULL, use the specified cache for blocks.
   // If NULL, leveldb will automatically create and use an 8MB internal cache.
+  // 如果是non—NULL,那么对blocks使用指定的缓存
+  // 如果是NULL，leveldb将会自动的创建和使用一个8M的内部缓存
   // Default: NULL
   Cache* block_cache;
 
@@ -102,7 +118,9 @@ struct LEVELDB_EXPORT Options {
   // block size specified here corresponds to uncompressed data.  The
   // actual size of the unit read from disk may be smaller if
   // compression is enabled.  This parameter can be changed dynamically.
-  //
+  // 用户数据包装的每个块的近似大小，注意：这里指定的块的大小对应的是没有经过压缩的数据
+  // 如果允许压缩，从磁盘读取的单元的实际大小会更小， 这个参数可以动态的改变
+
   // Default: 4K
   size_t block_size;
 
@@ -150,11 +168,14 @@ struct LEVELDB_EXPORT Options {
   // If non-NULL, use the specified filter policy to reduce disk reads.
   // Many applications will benefit from passing the result of
   // NewBloomFilterPolicy() here.
+  // 如果是non—NULL， 使用指定的过滤策略去降低磁盘读取.
+  // 许多的应用将会通过NewBloomFilterPolicy()获益
   //
   // Default: NULL
   const FilterPolicy* filter_policy;
 
   // Create an Options object with default values for all fields.
+  // 构造函数
   Options();
 };
 

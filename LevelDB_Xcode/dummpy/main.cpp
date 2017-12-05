@@ -50,5 +50,8 @@ namespace leveldb {
 }  // namespace leveldb
 
 int main(int argc, char** argv) {
+    char *s1 = "abcd";
+    char *s2 = "abcd";
+    memcmp(s1, s2, 2);
     return leveldb::test::RunAllTests();
 }
