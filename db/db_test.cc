@@ -24,7 +24,7 @@ int main() {
         if(s.ok()){
             cout << "insert data success..." << endl;
             string value;
-            s = db->Get(ReadOptions(),"abcd",&value);
+            s = db->Get(ReadOptions(),"abc",&value);
             if(s.ok()){
                 cout << "get data success value:" << value << endl;
             }

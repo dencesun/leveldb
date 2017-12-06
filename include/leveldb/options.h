@@ -180,6 +180,7 @@ struct LEVELDB_EXPORT Options {
 };
 
 // Options that control read operations
+// 关于控制读取操作的一些选项
 struct LEVELDB_EXPORT ReadOptions {
   // If true, all data read from underlying storage will be
   // verified against corresponding checksums.

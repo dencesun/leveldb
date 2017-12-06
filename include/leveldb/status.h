@@ -39,6 +39,7 @@ class LEVELDB_EXPORT Status {
 
   // Return error status of an appropriate type.
   // 返回一个适当类型的错误状态
+  // 返回值是Status类（之前知识量不够，其实可以直接对类名进行初始化，得到一个类，只是这个类没有名字，但是可以在函数中return）
   static Status NotFound(const Slice& msg, const Slice& msg2 = Slice()) {
     return Status(kNotFound, msg, msg2);
   }
