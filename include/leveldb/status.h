@@ -57,9 +57,11 @@ class LEVELDB_EXPORT Status {
   }
 
   // Returns true iff the status indicates success.
+  // 如果状态指示是成功的，则返回true
   bool ok() const { return (state_ == NULL); }
 
   // Returns true iff the status indicates a NotFound error.
+  // 如果status表明是notFound error，则返回true
   bool IsNotFound() const { return code() == kNotFound; }
 
   // Returns true iff the status indicates a Corruption error.
@@ -84,6 +86,10 @@ class LEVELDB_EXPORT Status {
   //    state_[0..3] == length of message
   //    state_[4]    == code
   //    state_[5..]  == message
+  // OK status 有一个NULL state_, 否则，state_是一个new[] 分配的数组
+  //    state_[0..3] == message的长度
+  //    state_[4] == code (状态码)
+  //    state_[5..] == message的内容
   const char* state_;
 
   enum Code {
@@ -106,6 +112,7 @@ class LEVELDB_EXPORT Status {
 inline Status::Status(const Status& s) {
   state_ = (s.state_ == NULL) ? NULL : CopyState(s.state_);
 }
+// 内联函数，运算符重载，防止浅拷贝（对吗？）
 inline void Status::operator=(const Status& s) {
   // The following condition catches both aliasing (when this == &s),
   // and the common case where both s and *this are ok.

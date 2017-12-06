@@ -607,6 +607,7 @@ std::string Version::DebugString() const {
 // A helper class so we can efficiently apply a whole sequence
 // of edits to a particular state without creating intermediate
 // Versions that contain full copies of the intermediate state.
+// 将VersionEdit应用到VersionSet上的过程封装成VersionSet::Builder. 主要是更新
 class VersionSet::Builder {
  private:
   // Helper to sort by v->files_[file_number].smallest

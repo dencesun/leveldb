@@ -17,6 +17,11 @@ class InternalKeyComparator;
 class Mutex;
 class MemTableIterator;
 
+// db数据在内存中的存储格式。写操作的数据都会先写到memtable中。memetable的size有限制值(write_buffer_size)
+// memtable的实现是skiplist(db/skiplist.h)
+// 当一个memtable size到达阈值时，会变成只读的memtable(immutable memtable), 同时生成一个新的memtable供新的写入
+// 后台的compact进程会负责将immutable memtable dump成sstable。所以，同时最多会存在两个memtable(正在写的memtable
+// 和immutable memtable)
 class MemTable {
  public:
   // MemTables are reference counted.  The initial reference count

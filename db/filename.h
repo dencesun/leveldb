@@ -17,6 +17,22 @@ namespace leveldb {
 
 class Env;
 
+// db中的文件用文件名区分类型，有以下几种类型
+// 1. kLogFile, 日志文件：[0-9]+.log
+//  leveldb的写流程是先记binlog，然后写sstable，该日志文件即是binlog。前缀数字为FileNumber
+// 2. kDBLockFile, lock文件：LOCK
+//  一个db同时只能有一个db实例操作，通过对LOCK文件加文件锁（flock）实现主动保护
+// 3. kTableFile, sstable文件：[0-9]+.sst
+//  保存数据的sstable文件。前缀为FileNumber。
+// 4. kDescriptorFile, db元文件信息： MANIFEST-[0-9]+
+//  每当db中的状态改变(VersionSet), 会将这次改变(VersionEdit)追加到descriptor文件中
+//  后缀数字为FileNumber
+// 5. kCurrentFile, : CURRENT
+//  CURRENT文件中保存当前使用的descriptor文件的文件名
+// 6. kTempFile, 临时文件： [0-9]+.dbtmp
+//  对db做修复（Repairer）时，会产生临时文件。前缀为FileNumber.
+// 7.kINfoLogFile, db运行时打印日志的文件：LOG
+//  db运行时，打印的info日志保存在LOG中。每次重新运行，则会现将LOG文件重命名为LOG.old
 enum FileType {
   kLogFile,
   kDBLockFile,

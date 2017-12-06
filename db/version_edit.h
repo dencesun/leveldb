@@ -14,17 +14,21 @@ namespace leveldb {
 
 class VersionSet;
 
+// sstable文件的原信息封装成FileMetaData
 struct FileMetaData {
-  int refs;
-  int allowed_seeks;          // Seeks allowed until compaction
+  int refs;                   // 引用计数
+  int allowed_seeks;          // Seeks allowed until compaction(compact之前允许的seek次数（参见Version）)
   uint64_t number;
   uint64_t file_size;         // File size in bytes
-  InternalKey smallest;       // Smallest internal key served by table
-  InternalKey largest;        // Largest internal key served by table
+  InternalKey smallest;       // Smallest internal key served by table （sstable文件的最小key）
+  InternalKey largest;        // Largest internal key served by table  （sstable文件的最大key）
 
   FileMetaData() : refs(0), allowed_seeks(1 << 30), file_size(0) { }
 };
 
+// compact过程中会有一系列改变当前Version的操作(FileNumber增加， 删除input的sstable， 增加输出的sstable····)
+// 为了缩小Version切换的时间点，将这些操作封装成VersionEdit， compact完成时，将VersionEdit中的操作一次应用到当前
+// Version,即可得到最新状态的Version
 class VersionEdit {
  public:
   VersionEdit() { Clear(); }
@@ -86,21 +90,31 @@ class VersionEdit {
 
   typedef std::set< std::pair<int, uint64_t> > DeletedFileSet;
 
+  // db一旦创建，排序的逻辑就必须保持兼容，用comparator的名字做凭证
   std::string comparator_;
+  // log的FileNumber
   uint64_t log_number_;
+  // 辅助log的FileNumber
   uint64_t prev_log_number_;
+  // 下一个可用FileNumber
   uint64_t next_file_number_;
+  // 用过的最后一个SequenceNumber
   SequenceNumber last_sequence_;
+  // 标识是否存在，验证使用
   bool has_comparator_;
   bool has_log_number_;
   bool has_prev_log_number_;
   bool has_next_file_number_;
   bool has_last_sequence_;
 
+  // 要更新的level==> compact_pointer
   std::vector< std::pair<int, InternalKey> > compact_pointers_;
+  // 要删除的sstable文件(compact的input)
   DeletedFileSet deleted_files_;
+  // 新的文件(compact的output)
   std::vector< std::pair<int, FileMetaData> > new_files_;
 };
+// 每次compact之后，都会讲对应的VersionEdit encode入manifest文件
 
 }  // namespace leveldb
 

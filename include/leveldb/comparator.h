@@ -10,6 +10,11 @@
 
 namespace leveldb {
 
+// 用户可以自定义user key的comparator（user-comparator),作为option传入，默认采用byte compare(memcmp).
+// comparator中有FindShortestSeparator()/ FindShortestSuccessor()两个接口
+// FindShortestSeperator(start, limit)用来或者大于start但小于limit的最小值
+// FindShortestSuccessor(start)是获得比start大的最小值。比较都基于user-comparator，二者都会被用来确定
+// sstable中的block的end-key
 class Slice;
 
 // A Comparator object provides a total order across slices that are

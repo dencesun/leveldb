@@ -185,11 +185,13 @@ struct LEVELDB_EXPORT ReadOptions {
   // If true, all data read from underlying storage will be
   // verified against corresponding checksums.
   // Default: false
+  // 是否对读到的block做校验
   bool verify_checksums;
 
   // Should the data read for this iteration be cached in memory?
   // Callers may wish to set this field to false for bulk scans.
   // Default: true
+  // 读到的block是否加入到cache
   bool fill_cache;
 
   // If "snapshot" is non-NULL, read as of the supplied snapshot
@@ -197,6 +199,7 @@ struct LEVELDB_EXPORT ReadOptions {
   // not have been released).  If "snapshot" is NULL, use an implicit
   // snapshot of the state at the beginning of this read operation.
   // Default: NULL
+  // 指定读取的snapshot
   const Snapshot* snapshot;
 
   ReadOptions()
@@ -224,6 +227,7 @@ struct LEVELDB_EXPORT WriteOptions {
   // system call followed by "fsync()".
   //
   // Default: false
+  // write时，记binlog后，是否对binlog做sync
   bool sync;
 
   WriteOptions()

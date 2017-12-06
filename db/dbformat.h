@@ -19,15 +19,19 @@ namespace leveldb {
 // Grouping of constants.  We may want to make some of these
 // parameters set via options.
 namespace config {
+// level的最大值
 static const int kNumLevels = 7;
 
 // Level-0 compaction is started when we hit this many files.
+// level0中sstable的文件数量超过这个阈值，出发compact
 static const int kL0_CompactionTrigger = 4;
 
 // Soft limit on number of level-0 files.  We slow down writes at this point.
+// level0中的sstable的数量超过这个阈值，满处理此次写（sleep 1ms）
 static const int kL0_SlowdownWritesTrigger = 8;
 
 // Maximum number of level-0 files.  We stop writes at this point.
+// level0中sstable的数量超过这个阈值，阻塞至compact memtable完成
 static const int kL0_StopWritesTrigger = 12;
 
 // Maximum level to which a new compacted memtable is pushed if it
@@ -48,6 +52,10 @@ class InternalKey;
 // Value types encoded as the last component of internal keys.
 // DO NOT CHANGE THESE ENUM VALUES: they are embedded in the on-disk
 // data structures.
+// leveldb更新（put/delete）某个key时，不会操控到db中的数据，每次操作都会直接插入
+// 一份kv数据，具体的数据合并和清除由后台的compact完成，所以每次put，db中就会新计入
+// 一份kv数据，即使该key已经存在；而delete等同于put空的value，为了区分真实的kv数据
+// 和删除操作的mock数据，使用ValueType来标识
 enum ValueType {
   kTypeDeletion = 0x0,
   kTypeValue = 0x1
@@ -60,6 +68,10 @@ enum ValueType {
 // ValueType, not the lowest).
 static const ValueType kValueTypeForSeek = kTypeValue;
 
+// leveldb中每次更新（put/delete）操作都会拥有一个版本，由SequenceNumber来标识，
+// 整个db有一个全局值保存着当前使用到的SequenceNumber。SequenceNumber在leveldb
+// 有重要的地位，key的排序，compact以及snapshot都依赖于它。
+// 存储时，SequenceNumber只占用56bits， ValueType占用8bits,二者共同占用64bits(uint64_t)
 typedef uint64_t SequenceNumber;
 
 // We leave eight bits empty at the bottom so a type and sequence#
@@ -67,7 +79,9 @@ typedef uint64_t SequenceNumber;
 static const SequenceNumber kMaxSequenceNumber =
     ((0x1ull << 56) - 1);
 
+// db内部操作的key。db内部需要将user_key加入元信息（ValueType/SequenceNumber）一并做处理
 struct ParsedInternalKey {
+  // user_key用户层面传入的key， 使用Slice格式
   Slice user_key;
   SequenceNumber sequence;
   ValueType type;
@@ -110,6 +124,10 @@ inline ValueType ExtractValueType(const Slice& internal_key) {
 
 // A comparator for internal keys that uses a specified comparator for
 // the user key portion and breaks ties by decreasing sequence number.
+// db内部做key排序时使用的比较方法。排序时，会先使用user-comparator比较user-key，
+// 如果user-key相同，则比较SequenceNumber, SequenceNumber大的为小。因为SequenceNumber
+// 在db中全局递增，所以，对于相同的user-key, 最新的更新（SequenceNumber 更大）排在前面
+// 在查找的时候，会被先找到
 class InternalKeyComparator : public Comparator {
  private:
   const Comparator* user_comparator_;
@@ -141,6 +159,7 @@ class InternalFilterPolicy : public FilterPolicy {
 // Modules in this directory should keep internal keys wrapped inside
 // the following class instead of plain strings so that we do not
 // incorrectly use string comparisons instead of an InternalKeyComparator.
+// db内部，包装易用的结构，包含userkey与SequenceNumber/ValueType
 class InternalKey {
  private:
   std::string rep_;
@@ -186,6 +205,8 @@ inline bool ParseInternalKey(const Slice& internal_key,
 }
 
 // A helper class useful for DBImpl::Get()
+// db内部在为查找mamtable/sstable方便，包装使用的key结构，保存有userkey与SequenceNubmer/ValueType dump
+// 在内存的数据
 class LookupKey {
  public:
   // Initialize *this for looking up user_key at a snapshot with
@@ -211,6 +232,7 @@ class LookupKey {
   //                                    <-- end_
   // The array is a suitable MemTable key.
   // The suffix starting with "userkey" can be used as an InternalKey.
+  // 对memtable进行lookup时使用[start_, end_], 对sstable lookup时使用[_kstart, _end]
   const char* start_;
   const char* kstart_;
   const char* end_;

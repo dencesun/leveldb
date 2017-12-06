@@ -14,6 +14,9 @@ namespace leveldb {
 struct BlockContents;
 class Comparator;
 
+// sstable的数据由一个个的block组成。当持久化数据时，多分kv聚合成block一次写入；
+// 当读取时，也是以block为单位做I/O。sstable的索引信息中会保存符合key-range的block在
+// 文件中的offset/size (BlockHandle)
 class Block {
  public:
   // Initialize the block with the specified contents.
